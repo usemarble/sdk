@@ -1,0 +1,3 @@
+{
+  "extends": "@usemarble/typescript-config/base.json"
+}
