@@ -1,4 +1,4 @@
-export * from "./types.js";
+export * from "./types";
 export { MarbleClient } from "./client";
 export { MarbleHttpError } from "./errors";
 export {

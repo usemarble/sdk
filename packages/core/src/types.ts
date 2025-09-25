@@ -91,7 +91,7 @@ export type MarbleOptions = {
 };
 
 export type RequestOptions = {
-  signal?: AbortSignal |null;
+  signal?: AbortSignal | null;
 };
 
 export type PostsListParams = {
