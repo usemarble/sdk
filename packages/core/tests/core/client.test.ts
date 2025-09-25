@@ -1,8 +1,7 @@
-// packages/core/tests/core/client.test.ts
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { MarbleClient } from "../../src/client";
-import type { MarbleOptions } from "../../src/types";
-import { MarbleHttpError } from "../../src/errors";
+import { MarbleClient } from "../../src";
+import type { MarbleOptions } from "../../src";
+import { MarbleHttpError } from "../../src";
 
 describe("MarbleClient", () => {
   let mockFetch: ReturnType<typeof vi.fn>;
@@ -13,7 +12,7 @@ describe("MarbleClient", () => {
     client = new MarbleClient({
       baseUrl: "https://api.test",
       fetchImpl: mockFetch,
-      retryPolicy: null, // <-- ensure only one fetch attempt
+      retryPolicy: null,
     } satisfies MarbleOptions);
   });
 
@@ -79,14 +78,11 @@ describe("MarbleClient", () => {
       await client.listPosts();
       throw new Error("Expected listPosts to throw");
     } catch (err: any) {
-      // one invocation only
       expect(mockFetch).toHaveBeenCalledTimes(1);
 
-      // assert the error object
       expect(err).toBeInstanceOf(MarbleHttpError);
       expect(err.status).toBe(404);
       expect(err.statusText).toBe("Not Found");
-      // optional: message contains 404
       expect(String(err.message)).toMatch(/404/);
     }
   });
