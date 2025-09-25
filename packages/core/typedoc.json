@@ -4,17 +4,16 @@
   "out": "docs",
 
   "tsconfig": "tsconfig.json",
-  "plugin": [],
 
   "name": "@usemarble/core",
   "includeVersion": true,
   "hideGenerator": true,
-  "categorizeByGroup": true,
 
   "excludePrivate": true,
   "excludeInternal": true,
   "excludeExternals": false,
 
+  "categorizeByGroup": true,
   "readme": "none",
   "githubPages": false
 }
