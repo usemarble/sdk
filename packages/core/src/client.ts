@@ -10,6 +10,8 @@ import type {
   MarbleAuthorList,
   Post,
   Pagination,
+  PaginateOptions,
+  PostsScanParams,
 } from "./types";
 import { q, normalizeBaseUrl, mergeHeaders } from "./utils";
 import { MarbleHttpError } from "./errors";
@@ -212,5 +214,99 @@ export class MarbleClient {
         totalPages: 1,
       };
     return { authors, pagination };
+  }
+
+  private ensureNotAborted(signal: AbortSignal | null | undefined) {
+    if (signal?.aborted) throw new Error("Aborted");
+  }
+
+  async *iteratePostPages(
+    params: PostsScanParams = {},
+    opts: PaginateOptions = {}
+  ): AsyncGenerator<MarblePostList, void, unknown> {
+    const pageSize = opts.pageSize ?? 20;
+    let page = opts.startPage ?? 1;
+    let pagesRead = 0;
+
+    while (true) {
+      this.ensureNotAborted(opts.signal);
+
+      const pageData = await this.listPosts(
+        { ...params, page, limit: pageSize },
+        { signal: opts.signal ?? null }
+      );
+
+      yield pageData;
+
+      pagesRead++;
+      const next = pageData.pagination.nextPage;
+      if (next == null) break;
+      if (opts.maxPages != null && pagesRead >= opts.maxPages) break;
+
+      page = next;
+    }
+  }
+
+  async *paginatePosts(
+    params: PostsScanParams = {},
+    opts: PaginateOptions = {}
+  ): AsyncGenerator<Post, void, unknown> {
+    for await (const page of this.iteratePostPages(params, opts)) {
+      for (const post of page.posts) {
+        this.ensureNotAborted(opts.signal);
+        yield post;
+      }
+    }
+  }
+
+  async *iterateTagPages(
+    opts: PaginateOptions = {}
+  ): AsyncGenerator<MarbleTagList, void, unknown> {
+    let pagesRead = 0;
+
+    while (true) {
+      this.ensureNotAborted(opts.signal);
+      const data = await this.listTags({ signal: opts.signal ?? null });
+      yield data;
+
+      pagesRead++;
+      const next = data.pagination.nextPage;
+      if (next == null) break;
+      if (opts.maxPages != null && pagesRead >= opts.maxPages) break;
+    }
+  }
+
+  async *iterateCategoryPages(
+    opts: PaginateOptions = {}
+  ): AsyncGenerator<MarbleCategoryList, void, unknown> {
+    let pagesRead = 0;
+
+    while (true) {
+      this.ensureNotAborted(opts.signal);
+      const data = await this.listCategories({ signal: opts.signal ?? null });
+      yield data;
+
+      pagesRead++;
+      const next = data.pagination.nextPage;
+      if (next == null) break;
+      if (opts.maxPages != null && pagesRead >= opts.maxPages) break;
+    }
+  }
+
+  async *iterateAuthorPages(
+    opts: PaginateOptions = {}
+  ): AsyncGenerator<MarbleAuthorList, void, unknown> {
+    let pagesRead = 0;
+
+    while (true) {
+      this.ensureNotAborted(opts.signal);
+      const data = await this.listAuthors({ signal: opts.signal ?? null });
+      yield data;
+
+      pagesRead++;
+      const next = data.pagination.nextPage;
+      if (next == null) break;
+      if (opts.maxPages != null && pagesRead >= opts.maxPages) break;
+    }
   }
 }

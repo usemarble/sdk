@@ -103,3 +103,12 @@ export type PostsListParams = {
   author?: string;
   sort?: "publishedAt" | "-publishedAt" | "updatedAt" | "-updatedAt";
 };
+
+export type PaginateOptions = {
+  pageSize?: number;
+  startPage?: number;
+  maxPages?: number;
+  signal?: AbortSignal | null;
+};
+
+export type PostsScanParams = Omit<PostsListParams, "page" | "limit">;
