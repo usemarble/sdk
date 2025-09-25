@@ -16,14 +16,16 @@
   "scripts": {
     "build": "tsup --config ../../tsup.config.ts",
     "check-types": "tsc -p tsconfig.json --noEmit",
-    "clean": "rimraf dist"
+    "clean": "rimraf dist",
+    "test": "tsx tests/smoke.ts"
   },
   "dependencies": {
     "zod": "^4.1.11"
   },
   "devDependencies": {
     "@types/node": "^20.14.10",
-    "@usemarble/typescript-config": "workspace:*"
+    "@usemarble/typescript-config": "workspace:*",
+    "tsx": "^4.20.5"
   },
   "publishConfig": {
     "access": "public"
