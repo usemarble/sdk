@@ -18,7 +18,9 @@
     "check-types": "tsc -p tsconfig.json --noEmit",
     "clean": "rimraf dist",
     "test": "tsx tests/smoke.ts",
-    "retry-test": "tsx tests/retry.smoke.ts"
+    "retry-test": "tsx tests/retry.smoke.ts",
+    "docs": "typedoc --options typedoc.json",
+    "docs:clean": "rimraf docs"
   },
   "dependencies": {
     "zod": "^4.1.11"
@@ -26,7 +28,8 @@
   "devDependencies": {
     "@types/node": "^20.14.10",
     "@usemarble/typescript-config": "workspace:*",
-    "tsx": "^4.20.5"
+    "tsx": "^4.20.5",
+    "typedoc": "^0.28.13"
   },
   "publishConfig": {
     "access": "public"

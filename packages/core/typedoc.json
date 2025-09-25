@@ -1,0 +1,20 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPoints": ["src/index.ts"],
+  "out": "docs",
+
+  "tsconfig": "tsconfig.json",
+  "plugin": [],
+
+  "name": "@usemarble/core",
+  "includeVersion": true,
+  "hideGenerator": true,
+  "categorizeByGroup": true,
+
+  "excludePrivate": true,
+  "excludeInternal": true,
+  "excludeExternals": false,
+
+  "readme": "none",
+  "githubPages": false
+}
