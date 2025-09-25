@@ -7,10 +7,6 @@ settings:
 importers:
 
   .:
-    dependencies:
-      zod:
-        specifier: ^4.1.11
-        version: 4.1.11
     devDependencies:
       '@types/node':
         specifier: ^20.14.10
@@ -32,6 +28,10 @@ importers:
         version: 5.9.2
 
   packages/core:
+    dependencies:
+      zod:
+        specifier: ^4.1.11
+        version: 4.1.11
     devDependencies:
       '@types/node':
         specifier: ^20.14.10

@@ -18,6 +18,9 @@
     "check-types": "tsc -p tsconfig.json --noEmit",
     "clean": "rimraf dist"
   },
+  "dependencies": {
+    "zod": "^4.1.11"
+  },
   "devDependencies": {
     "@types/node": "^20.14.10",
     "@usemarble/typescript-config": "workspace:*"
