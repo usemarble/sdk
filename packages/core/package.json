@@ -17,7 +17,8 @@
     "build": "tsup --config ../../tsup.config.ts",
     "check-types": "tsc -p tsconfig.json --noEmit",
     "clean": "rimraf dist",
-    "test": "tsx tests/smoke.ts"
+    "test": "tsx tests/smoke.ts",
+    "retry-test": "tsx tests/retry.smoke.ts"
   },
   "dependencies": {
     "zod": "^4.1.11"

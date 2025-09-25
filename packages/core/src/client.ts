@@ -12,6 +12,7 @@ import type {
   Pagination,
   PaginateOptions,
   PostsScanParams,
+  RetryPolicy,
 } from "./types";
 import { q, normalizeBaseUrl, mergeHeaders } from "./utils";
 import { MarbleHttpError } from "./errors";
@@ -22,12 +23,14 @@ import {
   ApiListTagsResponse,
   ApiPost,
 } from "./schemas";
+import { defaultRetryPolicy, sleep } from "./retry";
 
 export class MarbleClient {
   private readonly baseUrl: string;
   private readonly apiKey: string | undefined;
   private readonly fetcher: typeof fetch;
   private readonly extraHeaders: Record<string, string>;
+  private readonly retryPolicy: RetryPolicy | null;
 
   constructor(opts: MarbleOptions) {
     if (!opts?.baseUrl) throw new Error("MarbleClient: baseUrl is required");
@@ -35,6 +38,8 @@ export class MarbleClient {
     this.apiKey = opts.apiKey;
     this.fetcher = opts.fetchImpl ?? fetch;
     this.extraHeaders = opts.headers ?? {};
+    this.retryPolicy =
+      opts.retryPolicy === undefined ? defaultRetryPolicy : opts.retryPolicy;
   }
 
   private headers(): Record<string, string> {
@@ -51,31 +56,67 @@ export class MarbleClient {
     schema: T,
     ro?: RequestOptions
   ): Promise<z.infer<T>> {
-    const res = await this.fetcher(`${this.baseUrl}${path}`, {
-      method: "GET",
-      headers: this.headers(),
-      signal: ro?.signal ?? null,
-    });
-    if (!res.ok) {
-      let body: unknown;
+    const policy = this.retryPolicy;
+    const maxRetries = policy
+      ? (policy.maxRetries ?? defaultRetryPolicy.maxRetries)
+      : 0;
+    const baseDelayMs = policy
+      ? (policy.baseDelayMs ?? defaultRetryPolicy.baseDelayMs)
+      : defaultRetryPolicy.baseDelayMs;
+    const maxDelayMs = policy
+      ? (policy.maxDelayMs ?? defaultRetryPolicy.maxDelayMs)
+      : defaultRetryPolicy.maxDelayMs;
+
+    let attempt = 0;
+    while (true) {
+      attempt++;
       try {
-        body = await res.json();
-      } catch {
-        try {
-          body = await res.text();
-        } catch {}
-      }
-      throw new MarbleHttpError(
-        `GET ${path} failed: ${res.status} ${res.statusText}`,
-        {
-          status: res.status,
-          statusText: res.statusText,
-          body,
+        const res = await this.fetcher(`${this.baseUrl}${path}`, {
+          method: "GET",
+          headers: this.headers(),
+          signal: ro?.signal ?? null,
+        });
+        if (!res.ok) {
+          if (policy) {
+            const decision = policy.shouldRetry({ attempt, response: res });
+            if (decision && attempt <= maxRetries) {
+              await sleep(decision.delayMs, ro?.signal ?? null);
+              continue;
+            }
+          }
+          let body: unknown;
+          try {
+            body = await res.json();
+          } catch {
+            try {
+              body = await res.text();
+            } catch {}
+          }
+          throw new MarbleHttpError(
+            `GET ${path} failed: ${res.status} ${res.statusText}`,
+            {
+              status: res.status,
+              statusText: res.statusText,
+              body,
+            }
+          );
         }
-      );
+        const data = await res.json();
+        return schema.parse(data);
+      } catch (err) {
+        if (policy) {
+          const decision = policy.shouldRetry({
+            attempt,
+            error: err as unknown,
+          });
+          if (decision && attempt <= maxRetries) {
+            await sleep(decision.delayMs, ro?.signal ?? null);
+            continue;
+          }
+        }
+        throw err;
+      }
     }
-    const data = await res.json();
-    return schema.parse(data);
   }
 
   async listPosts(

@@ -88,6 +88,7 @@ export type MarbleOptions = {
   apiKey?: string;
   fetchImpl?: typeof fetch;
   headers?: Record<string, string>;
+  retryPolicy?: RetryPolicy | null;
 };
 
 export type RequestOptions = {
@@ -112,3 +113,20 @@ export type PaginateOptions = {
 };
 
 export type PostsScanParams = Omit<PostsListParams, "page" | "limit">;
+
+export type RetryDecision = {
+  delayMs: number;
+};
+
+export type RetryContext = {
+  attempt: number;
+  error?: unknown;
+  response?: Response;
+};
+
+export type RetryPolicy = {
+  maxRetries?: number;
+  baseDelayMs?: number;
+  maxDelayMs?: number;
+  shouldRetry: (ctx: RetryContext) => RetryDecision | undefined;
+};
