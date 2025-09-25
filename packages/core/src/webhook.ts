@@ -28,6 +28,21 @@ export type WebhookHeaders = {
   "x-marble-timestamp"?: string;
 } & Record<string, string>;
 
+/** Options that affect webhook signature verification. */
+export type VerifyOptions = {
+  /**
+   * When `true`, the signed payload is `${timestamp}.${rawBody}`.
+   * When `false`, the signed payload is `rawBody`.
+   * Default: inferred from the presence of a timestamp header.
+   */
+  includeTimestampInPayload?: boolean;
+  /**
+   * Acceptable clock skew (in seconds) when verifying timestamped signatures.
+   * Use `0` to disable the freshness check. Default: `300` (5 minutes).
+   */
+  toleranceSeconds?: number;
+};
+
 /** @internal Compute HMAC-SHA256 over the provided payload using the secret. */
 function computeSignature(secret: string, signedPayload: string): Buffer {
   const h = createHmac("sha256", secret);
@@ -58,21 +73,6 @@ function parseProvidedSignature(sigHeader: string): {
   return { sigHex: sigHeader };
 }
 
-/** Options that affect webhook signature verification. */
-export type VerifyOptions = {
-  /**
-   * When `true`, the signed payload is `${timestamp}.${rawBody}`.
-   * When `false`, the signed payload is `rawBody`.
-   * Default: inferred from the presence of a timestamp header.
-   */
-  includeTimestampInPayload?: boolean;
-  /**
-   * Acceptable clock skew (in seconds) when verifying timestamped signatures.
-   * Use `0` to disable the freshness check. Default: `300` (5 minutes).
-   */
-  toleranceSeconds?: number;
-};
-
 /**
  * Verify a Marble webhook signature (HMAC-SHA256).
  *
@@ -86,6 +86,10 @@ export type VerifyOptions = {
  * @param opts Verification options (timestamp behavior, tolerance).
  * @returns `true` if verification succeeds; otherwise throws an `Error`.
  * @throws If signature is missing/invalid or timestamp is outside tolerance.
+ *
+ * @remarks
+ * This implementation uses Node's `crypto` module and is intended for server runtimes.
+ * For edge/browser runtimes, use Web Crypto (SubtleCrypto) and adapt accordingly.
  */
 export function verifyMarbleSignature(
   rawBody: string,

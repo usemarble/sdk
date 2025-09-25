@@ -172,7 +172,7 @@ export type PostsListParams = {
  * Options for async pagination helpers (`iteratePostPages`, `paginatePosts`).
  */
 export type PaginateOptions = {
-  /** Items per page (default 20). */
+  /** Items per page (default 20 for posts, 50 for tags/categories/authors). */
   pageSize?: number;
   /** First page to fetch (default 1). */
   startPage?: number;

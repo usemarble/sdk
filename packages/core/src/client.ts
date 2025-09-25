@@ -150,13 +150,21 @@ export class MarbleClient {
   }
 
   /**
-   * List all tags available in the Marble CMS.
+   * List tags (supports pagination if the API provides it).
    *
+   * @param params Optional pagination params `{ page, limit }`.
    * @param ro Optional request options.
    * @returns A list of tags plus pagination info.
    */
-  async listTags(ro?: RequestOptions): Promise<MarbleTagList> {
-    const raw = await this.getJson(`/tags`, ApiListTagsResponse, ro);
+  async listTags(
+    params: { page?: number; limit?: number } = {},
+    ro?: RequestOptions
+  ): Promise<MarbleTagList> {
+    const raw = await this.getJson(
+      `/tags${q(params)}`,
+      ApiListTagsResponse,
+      ro
+    );
     const tags = (raw.tags ?? raw.data ?? []).map((t) => ({
       id: t.id,
       name: t.name,
@@ -165,7 +173,7 @@ export class MarbleClient {
     const pagination: Pagination = raw.pagination ??
       raw.meta?.pagination ?? {
         limit: tags.length,
-        currentPage: 1,
+        currentPage: params.page ?? 1,
         nextPage: null,
         previousPage: null,
         totalItems: tags.length,
@@ -175,14 +183,18 @@ export class MarbleClient {
   }
 
   /**
-   * List all categories available in the Marble CMS.
+   * List categories (supports pagination if the API provides it).
    *
+   * @param params Optional pagination params `{ page, limit }`.
    * @param ro Optional request options.
    * @returns A list of categories plus pagination info.
    */
-  async listCategories(ro?: RequestOptions): Promise<MarbleCategoryList> {
+  async listCategories(
+    params: { page?: number; limit?: number } = {},
+    ro?: RequestOptions
+  ): Promise<MarbleCategoryList> {
     const raw = await this.getJson(
-      `/categories`,
+      `/categories${q(params)}`,
       ApiListCategoriesResponse,
       ro
     );
@@ -194,7 +206,7 @@ export class MarbleClient {
     const pagination: Pagination = raw.pagination ??
       raw.meta?.pagination ?? {
         limit: categories.length,
-        currentPage: 1,
+        currentPage: params.page ?? 1,
         nextPage: null,
         previousPage: null,
         totalItems: categories.length,
@@ -204,13 +216,21 @@ export class MarbleClient {
   }
 
   /**
-   * List all authors available in the Marble CMS.
+   * List authors (supports pagination if the API provides it).
    *
+   * @param params Optional pagination params `{ page, limit }`.
    * @param ro Optional request options.
    * @returns A list of authors plus pagination info.
    */
-  async listAuthors(ro?: RequestOptions): Promise<MarbleAuthorList> {
-    const raw = await this.getJson(`/authors`, ApiListAuthorsResponse, ro);
+  async listAuthors(
+    params: { page?: number; limit?: number } = {},
+    ro?: RequestOptions
+  ): Promise<MarbleAuthorList> {
+    const raw = await this.getJson(
+      `/authors${q(params)}`,
+      ApiListAuthorsResponse,
+      ro
+    );
     const authors = (raw.authors ?? raw.data ?? []).map((a) => ({
       id: a.id,
       name: a.name,
@@ -219,7 +239,7 @@ export class MarbleClient {
     const pagination: Pagination = raw.pagination ??
       raw.meta?.pagination ?? {
         limit: authors.length,
-        currentPage: 1,
+        currentPage: params.page ?? 1,
         nextPage: null,
         previousPage: null,
         totalItems: authors.length,
@@ -241,12 +261,14 @@ export class MarbleClient {
     let page = opts.startPage ?? 1;
     let pagesRead = 0;
 
+    const ro = opts.signal !== undefined ? { signal: opts.signal } : undefined;
+
     while (true) {
       this.ensureNotAborted(opts.signal);
 
       const pageData = await this.listPosts(
         { ...params, page, limit: pageSize },
-        { signal: opts.signal ?? null }
+        ro
       );
 
       yield pageData;
@@ -283,17 +305,22 @@ export class MarbleClient {
   async *iterateTagPages(
     opts: PaginateOptions = {}
   ): AsyncGenerator<MarbleTagList, void, unknown> {
+    const pageSize = opts.pageSize ?? 50;
+    let page = opts.startPage ?? 1;
     let pagesRead = 0;
+    const ro = opts.signal !== undefined ? { signal: opts.signal } : undefined;
 
     while (true) {
       this.ensureNotAborted(opts.signal);
-      const data = await this.listTags({ signal: opts.signal ?? null });
+      const data = await this.listTags({ page, limit: pageSize }, ro);
       yield data;
 
       pagesRead++;
       const next = data.pagination.nextPage;
       if (next == null) break;
       if (opts.maxPages != null && pagesRead >= opts.maxPages) break;
+
+      page = next;
     }
   }
 
@@ -303,17 +330,22 @@ export class MarbleClient {
   async *iterateCategoryPages(
     opts: PaginateOptions = {}
   ): AsyncGenerator<MarbleCategoryList, void, unknown> {
+    const pageSize = opts.pageSize ?? 50;
+    let page = opts.startPage ?? 1;
     let pagesRead = 0;
+    const ro = opts.signal !== undefined ? { signal: opts.signal } : undefined;
 
     while (true) {
       this.ensureNotAborted(opts.signal);
-      const data = await this.listCategories({ signal: opts.signal ?? null });
+      const data = await this.listCategories({ page, limit: pageSize }, ro);
       yield data;
 
       pagesRead++;
       const next = data.pagination.nextPage;
       if (next == null) break;
       if (opts.maxPages != null && pagesRead >= opts.maxPages) break;
+
+      page = next;
     }
   }
 
@@ -323,17 +355,22 @@ export class MarbleClient {
   async *iterateAuthorPages(
     opts: PaginateOptions = {}
   ): AsyncGenerator<MarbleAuthorList, void, unknown> {
+    const pageSize = opts.pageSize ?? 50;
+    let page = opts.startPage ?? 1;
     let pagesRead = 0;
+    const ro = opts.signal !== undefined ? { signal: opts.signal } : undefined;
 
     while (true) {
       this.ensureNotAborted(opts.signal);
-      const data = await this.listAuthors({ signal: opts.signal ?? null });
+      const data = await this.listAuthors({ page, limit: pageSize }, ro);
       yield data;
 
       pagesRead++;
       const next = data.pagination.nextPage;
       if (next == null) break;
       if (opts.maxPages != null && pagesRead >= opts.maxPages) break;
+
+      page = next;
     }
   }
 
@@ -352,27 +389,23 @@ export class MarbleClient {
     const maxRetries = policy
       ? (policy.maxRetries ?? defaultRetryPolicy.maxRetries)
       : 0;
-    const baseDelayMs = policy
-      ? (policy.baseDelayMs ?? defaultRetryPolicy.baseDelayMs)
-      : defaultRetryPolicy.baseDelayMs;
-    const maxDelayMs = policy
-      ? (policy.maxDelayMs ?? defaultRetryPolicy.maxDelayMs)
-      : defaultRetryPolicy.maxDelayMs;
 
     let attempt = 0;
     while (true) {
       attempt++;
       try {
-        const res = await this.fetcher(`${this.baseUrl}${path}`, {
+        const init: RequestInit = {
           method: "GET",
           headers: this.headers(),
-          signal: ro?.signal ?? null,
-        });
+        };
+        if (ro?.signal) init.signal = ro.signal;
+
+        const res = await this.fetcher(`${this.baseUrl}${path}`, init);
         if (!res.ok) {
           if (policy) {
             const decision = policy.shouldRetry({ attempt, response: res });
             if (decision && attempt <= maxRetries) {
-              await sleep(decision.delayMs, ro?.signal ?? null);
+              await sleep(decision.delayMs, ro?.signal);
               continue;
             }
           }
@@ -402,7 +435,7 @@ export class MarbleClient {
             error: err as unknown,
           });
           if (decision && attempt <= maxRetries) {
-            await sleep(decision.delayMs, ro?.signal ?? null);
+            await sleep(decision.delayMs, ro?.signal);
             continue;
           }
         }
