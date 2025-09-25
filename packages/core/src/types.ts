@@ -1,10 +1,3 @@
-// SDK options
-export interface MarbleOptions {
-  workspaceKey: string;
-  baseUrl?: string;
-  fetchImpl?: typeof fetch;
-}
-
 export type Post = {
   id: string;
   slug: string;
@@ -37,9 +30,9 @@ export type Post = {
 
 export type Pagination = {
   limit: number;
-  currpage: number;
+  currentPage: number;
   nextPage: number | null;
-  prevPage: number | null;
+  previousPage: number | null;
   totalItems: number;
   totalPages: number;
 };
@@ -49,9 +42,7 @@ export type MarblePostList = {
   pagination: Pagination;
 };
 
-export type MarblePost = {
-  post: Post;
-};
+export type MarblePost = { post: Post };
 
 export type Tag = {
   id: string;
@@ -59,9 +50,7 @@ export type Tag = {
   slug: string;
 };
 
-export type MarbleTag = {
-  tag: Tag;
-};
+export type MarbleTag = { tag: Tag };
 
 export type MarbleTagList = {
   tags: Tag[];
@@ -74,9 +63,7 @@ export type Category = {
   slug: string;
 };
 
-export type MarbleCategory = {
-  category: Category;
-};
+export type MarbleCategory = { category: Category };
 
 export type MarbleCategoryList = {
   categories: Category[];
@@ -89,37 +76,30 @@ export type Author = {
   image: string;
 };
 
-export type MarbleAuthor = {
-  author: Author;
-};
+export type MarbleAuthor = { author: Author };
 
 export type MarbleAuthorList = {
   authors: Author[];
   pagination: Pagination;
 };
 
-export interface PostsListParams {
+export type MarbleOptions = {
+  baseUrl: string;
+  apiKey?: string;
+  fetchImpl?: typeof fetch;
+  headers?: Record<string, string>;
+};
+
+export type RequestOptions = {
+  signal?: AbortSignal |null;
+};
+
+export type PostsListParams = {
   limit?: number;
   page?: number;
-  order?: "asc" | "desc";
-  category?: string; // slug
-  tags?: string[]; // slugs
-  query?: string;
-}
-
-export type MarbleEventName =
-  | "post.published"
-  | "post.updated"
-  | "post.deleted"
-  | "tag.created"
-  | "tag.updated"
-  | "tag.deleted"
-  | "category.created"
-  | "category.updated"
-  | "category.deleted"
-  | "media.deleted";
-
-export interface MarbleWebhookEvent<T = unknown> {
-  event: MarbleEventName;
-  data: T;
-}
+  search?: string;
+  tags?: string[];
+  category?: string;
+  author?: string;
+  sort?: "publishedAt" | "-publishedAt" | "updatedAt" | "-updatedAt";
+};

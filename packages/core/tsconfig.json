@@ -1,8 +1,14 @@
 {
   "extends": "@usemarble/typescript-config/base.json",
   "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "moduleDetection": "force",
+
     "rootDir": "src",
-    "outDir": "dist"
+    "outDir": "dist",
+    "lib": ["ES2022"],
+    "types": ["node"]
   },
   "include": ["src", "tests"],
   "exclude": ["dist", "node_modules"]

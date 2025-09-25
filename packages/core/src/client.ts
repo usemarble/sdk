@@ -1,178 +1,317 @@
 import type {
   MarbleOptions,
+  RequestOptions,
   PostsListParams,
   MarblePostList,
   MarblePost,
   MarbleTagList,
-  MarbleTag,
   MarbleCategoryList,
-  MarbleCategory,
   MarbleAuthorList,
-  MarbleAuthor,
   Post,
-  Pagination
+  Tag,
+  Category,
+  Author,
+  Pagination,
 } from "./types";
+import {
+  q,
+  toDateStrict,
+  normalizeBaseUrl,
+  mergeHeaders,
+  isRecord,
+  asString,
+  asArray,
+  asNullableNumber,
+} from "./utils";
+import { MarbleHttpError } from "./errors";
 
-// -------------------- helpers --------------------
-function q(params: Record<string, any>) {
-  const entries = Object.entries(params)
-    .filter(([, v]) => v !== undefined && v !== null && !(Array.isArray(v) && v.length === 0));
-  if (entries.length === 0) return "";
-  const usp = new URLSearchParams();
-  for (const [k, v] of entries) {
-    if (Array.isArray(v) && k === "tags") usp.set("tags", v.join(","));
-    else usp.set(k, String(v));
+type RawAuthor = { id: unknown; name: unknown; image?: unknown };
+type RawTag = { id: unknown; name: unknown; slug: unknown };
+type RawCategory = { id: unknown; name: unknown; slug: unknown };
+type RawAttribution = { author?: unknown; url?: unknown } | null;
+type RawPost = {
+  id: unknown;
+  slug: unknown;
+  title: unknown;
+  content?: unknown;
+  description?: unknown;
+  coverImage?: unknown;
+  publishedAt: unknown;
+  updatedAt?: unknown;
+  authors?: unknown;
+  category?: unknown;
+  tags?: unknown;
+  attribution?: unknown;
+};
+type RawPagination = {
+  limit?: unknown;
+  currentPage?: unknown;
+  nextPage?: unknown;
+  previousPage?: unknown;
+  totalItems?: unknown;
+  totalPages?: unknown;
+};
+
+type ListWrapper<T> = {
+  posts?: T[];
+  tags?: T[];
+  categories?: T[];
+  authors?: T[];
+  data?: T[];
+  pagination?: RawPagination;
+  meta?: { pagination?: RawPagination };
+};
+type SingleWrapper<T> = { post?: T; data?: T } & Partial<ListWrapper<T>>;
+
+function fromRawAuthor(x: unknown): Author {
+  const r = isRecord(x) ? (x as RawAuthor) : { id: "", name: "", image: "" };
+  return {
+    id: asString(r.id),
+    name: asString(r.name),
+    image: asString(r.image ?? ""),
+  };
+}
+
+function fromRawTag(x: unknown): Tag {
+  const r = isRecord(x) ? (x as RawTag) : { id: "", name: "", slug: "" };
+  return {
+    id: asString(r.id),
+    name: asString(r.name),
+    slug: asString(r.slug),
+  };
+}
+
+function fromRawCategory(x: unknown): Category {
+  const r = isRecord(x) ? (x as RawCategory) : { id: "", name: "", slug: "" };
+  return {
+    id: asString(r.id),
+    name: asString(r.name),
+    slug: asString(r.slug),
+  };
+}
+
+function fromRawAttribution(
+  x: unknown
+): { author: string; url: string } | null {
+  if (!x || !isRecord(x)) return null;
+  const r = x as RawAttribution & Record<string, unknown>;
+  return {
+    author: asString(r.author ?? ""),
+    url: asString(r.url ?? ""),
+  };
+}
+
+function fromRawPost(x: unknown): Post {
+  const r = isRecord(x) ? (x as RawPost) : ({} as RawPost);
+  return {
+    id: asString(r.id),
+    slug: asString(r.slug),
+    title: asString(r.title),
+    content: asString(r.content ?? ""),
+    description: asString(r.description ?? ""),
+    coverImage: asString(r.coverImage ?? ""),
+    publishedAt: toDateStrict(r.publishedAt, "publishedAt"),
+    updatedAt: toDateStrict(r.updatedAt ?? r.publishedAt, "updatedAt"),
+    authors: asArray(r.authors, fromRawAuthor),
+    category: fromRawCategory(r.category),
+    tags: asArray(r.tags, fromRawTag),
+    attribution: fromRawAttribution(r.attribution ?? null),
+  };
+}
+
+function fromRawPagination(x: unknown, defaults: Pagination): Pagination {
+  if (!isRecord(x)) return defaults;
+  const r = x as RawPagination;
+  return {
+    limit: asNullableNumber(r.limit) ?? defaults.limit,
+    currentPage: asNullableNumber(r.currentPage) ?? defaults.currentPage,
+    nextPage: asNullableNumber(r.nextPage),
+    previousPage: asNullableNumber(r.previousPage),
+    totalItems: asNullableNumber(r.totalItems) ?? defaults.totalItems,
+    totalPages: asNullableNumber(r.totalPages) ?? defaults.totalPages,
+  };
+}
+
+function pickArray<T>(raw: unknown, keys: Array<keyof ListWrapper<T>>): T[] {
+  if (!isRecord(raw)) return [];
+  for (const k of keys) {
+    const v = raw[k as string];
+    if (Array.isArray(v)) return v as T[];
   }
-  return `?${usp.toString()}`;
+  return [];
 }
 
-function toDate(v: unknown): Date {
-  if (v instanceof Date) return v;
-  if (typeof v === "string") return new Date(v);
-  throw new Error("Expected ISO date string");
+function pickPagination(raw: unknown): RawPagination | undefined {
+  if (!isRecord(raw)) return undefined;
+  const p = raw.pagination;
+  const meta = isRecord(raw.meta) ? raw.meta : undefined;
+  const mp = meta?.pagination;
+  return (
+    (isRecord(p) ? (p as RawPagination) : undefined) ??
+    (isRecord(mp) ? (mp as RawPagination) : undefined)
+  );
 }
 
-function deserializePost(raw: any): Post {
-  return {
-    id: String(raw.id),
-    slug: String(raw.slug),
-    title: String(raw.title),
-    content: String(raw.content ?? ""),
-    description: String(raw.description ?? ""),
-    coverImage: String(raw.coverImage ?? ""),
-    publishedAt: toDate(raw.publishedAt),
-    updatedAt: toDate(raw.updatedAt),
-    authors: Array.isArray(raw.authors) ? raw.authors.map((a: any) => ({
-      id: String(a.id),
-      name: String(a.name),
-      image: String(a.image ?? "")
-    })) : [],
-    category: raw.category
-      ? { id: String(raw.category.id), slug: String(raw.category.slug), name: String(raw.category.name) }
-      : { id: "", slug: "", name: "" }, // adjust to your needs
-    tags: Array.isArray(raw.tags) ? raw.tags.map((t: any) => ({
-      id: String(t.id),
-      slug: String(t.slug),
-      name: String(t.name)
-    })) : [],
-    attribution: raw.attribution
-      ? { author: String(raw.attribution.author ?? ""), url: String(raw.attribution.url ?? "") }
-      : null
-  };
+function pickSingle<T>(
+  raw: unknown,
+  keys: Array<keyof SingleWrapper<T>>
+): T | undefined {
+  if (!isRecord(raw)) return undefined;
+  for (const k of keys) {
+    const v = raw[k as string];
+    if (v !== undefined) return v as T;
+  }
+  return undefined;
 }
 
-function deserializePagination(p: any): Pagination {
-  return {
-    limit: Number(p?.limit ?? 0),
-    currpage: Number(p?.currpage ?? 1),
-    nextPage: p?.nextPage === null || p?.nextPage === undefined ? null : Number(p.nextPage),
-    prevPage: p?.prevPage === null || p?.prevPage === undefined ? null : Number(p.prevPage),
-    totalItems: Number(p?.totalItems ?? 0),
-    totalPages: Number(p?.totalPages ?? 1)
-  };
-}
-
-function ensureOk(res: Response) {
-  if (!res.ok) throw new Error(`Marble: ${res.status} ${res.statusText}`);
-}
-
-// -------------------- client --------------------
 export class MarbleClient {
-  private base: string;
-  private f: typeof fetch;
+  private readonly baseUrl: string | undefined;
+  private readonly apiKey?: string | undefined;
+  private readonly fetcher: typeof fetch;
+  private readonly extraHeaders: Record<string, string>;
 
-  constructor(private readonly opts: MarbleOptions) {
-    this.base = opts.baseUrl ?? "https://api.marblecms.com/v1";
-    this.f = opts.fetchImpl ?? fetch;
+  constructor(opts: MarbleOptions) {
+    if (!opts?.baseUrl) throw new Error("MarbleClient: baseUrl is required");
+    this.baseUrl = normalizeBaseUrl(opts.baseUrl);
+    this.apiKey = opts.apiKey ?? undefined;
+    this.fetcher = opts.fetchImpl ?? fetch;
+    this.extraHeaders = opts.headers ?? {};
   }
 
-  private url(path: string) {
-    return `${this.base}/${this.opts.workspaceKey}${path}`;
+  private headers(): Record<string, string> {
+    const h = mergeHeaders(
+      { "Content-Type": "application/json" },
+      this.extraHeaders
+    );
+    if (this.apiKey !== undefined) h.Authorization = `Bearer ${this.apiKey}`;
+    return h;
   }
 
-  posts = {
-    list: async (params: PostsListParams = {}): Promise<MarblePostList> => {
-      const res = await this.f(this.url(`/posts${q(params)}`));
-      ensureOk(res);
-      const json = await res.json();
-      return {
-        posts: Array.isArray(json.posts) ? json.posts.map(deserializePost) : [],
-        pagination: deserializePagination(json.pagination ?? {})
-      };
-    },
-
-    get: async (idOrSlug: string): Promise<MarblePost> => {
-      const res = await this.f(this.url(`/posts/${encodeURIComponent(idOrSlug)}`));
-      ensureOk(res);
-      const json = await res.json();
-      return { post: deserializePost(json.post) };
+  private async getUnknown(
+    path: string,
+    ro?: RequestOptions
+  ): Promise<unknown> {
+    const res = await this.fetcher(`${this.baseUrl}${path}`, {
+      method: "GET",
+      headers: this.headers(),
+      signal: ro?.signal ?? null,
+    });
+    if (!res.ok) {
+      let body: unknown;
+      try {
+        body = await res.json();
+      } catch {
+        try {
+          body = await res.text();
+        } catch {
+          body = undefined;
+        }
+      }
+      throw new MarbleHttpError(
+        `GET ${path} failed: ${res.status} ${res.statusText}`,
+        {
+          status: res.status,
+          statusText: res.statusText,
+          body,
+        }
+      );
     }
-  };
+    return res.json() as Promise<unknown>;
+  }
 
-  tags = {
-    list: async (): Promise<MarbleTagList> => {
-      const res = await this.f(this.url(`/tags`));
-      ensureOk(res);
-      const json = await res.json();
-      return {
-        tags: Array.isArray(json.tags)
-          ? json.tags.map((t: any) => ({ id: String(t.id), name: String(t.name), slug: String(t.slug) }))
-          : [],
-        pagination: deserializePagination(json.pagination ?? {})
-      };
-    },
-    get: async (slugOrId: string): Promise<MarbleTag> => {
-      const res = await this.f(this.url(`/tags/${encodeURIComponent(slugOrId)}`));
-      ensureOk(res);
-      const json = await res.json();
-      const t = json.tag;
-      return { tag: { id: String(t.id), name: String(t.name), slug: String(t.slug) } };
-    }
-  };
+  async listPosts(
+    params: PostsListParams = {},
+    ro?: RequestOptions
+  ): Promise<MarblePostList> {
+    const raw = await this.getUnknown(`/posts${q(params)}`, ro);
+    const rawPosts = pickArray<unknown>(raw, ["posts", "data"]);
+    const posts = rawPosts.map(fromRawPost);
 
-  categories = {
-    list: async (): Promise<MarbleCategoryList> => {
-      const res = await this.f(this.url(`/categories`));
-      ensureOk(res);
-      const json = await res.json();
-      return {
-        categories: Array.isArray(json.categories)
-          ? json.categories.map((c: any) => ({ id: String(c.id), name: String(c.name), slug: String(c.slug) }))
-          : [],
-        pagination: deserializePagination(json.pagination ?? {})
-      };
-    },
-    get: async (slugOrId: string): Promise<MarbleCategory> => {
-      const res = await this.f(this.url(`/categories/${encodeURIComponent(slugOrId)}`));
-      ensureOk(res);
-      const json = await res.json();
-      const c = json.category;
-      return { category: { id: String(c.id), name: String(c.name), slug: String(c.slug) } };
-    }
-  };
+    const paginationDefaults: Pagination = {
+      limit: params.limit ?? posts.length,
+      currentPage: params.page ?? 1,
+      nextPage: null,
+      previousPage: null,
+      totalItems: posts.length,
+      totalPages: 1,
+    };
+    const pagination = fromRawPagination(
+      pickPagination(raw),
+      paginationDefaults
+    );
 
-  authors = {
-    list: async (): Promise<MarbleAuthorList> => {
-      const res = await this.f(this.url(`/authors`));
-      ensureOk(res);
-      const json = await res.json();
-      return {
-        authors: Array.isArray(json.authors)
-          ? json.authors.map((a: any) => ({ id: String(a.id), name: String(a.name), image: String(a.image ?? "") }))
-          : [],
-        pagination: deserializePagination(json.pagination ?? {})
-      };
-    },
-    get: async (id: string): Promise<MarbleAuthor> => {
-      const res = await this.f(this.url(`/authors/${encodeURIComponent(id)}`));
-      ensureOk(res);
-      const json = await res.json();
-      const a = json.author;
-      return { author: { id: String(a.id), name: String(a.name), image: String(a.image ?? "") } };
-    }
-  };
-}
+    return { posts, pagination };
+  }
 
-export function createMarble(opts: MarbleOptions) {
-  return new MarbleClient(opts);
+  async getPost(slugOrId: string, ro?: RequestOptions): Promise<MarblePost> {
+    const raw = await this.getUnknown(
+      `/posts/${encodeURIComponent(slugOrId)}`,
+      ro
+    );
+    const rawPost = pickSingle<unknown>(raw, ["post", "data"]) ?? raw;
+    return { post: fromRawPost(rawPost) };
+  }
+
+  async listTags(ro?: RequestOptions): Promise<MarbleTagList> {
+    const raw = await this.getUnknown(`/tags`, ro);
+    const rawTags = pickArray<unknown>(raw, ["tags", "data"]);
+    const tags = rawTags.map((t) => fromRawTag(t));
+
+    const paginationDefaults: Pagination = {
+      limit: tags.length,
+      currentPage: 1,
+      nextPage: null,
+      previousPage: null,
+      totalItems: tags.length,
+      totalPages: 1,
+    };
+    const pagination = fromRawPagination(
+      pickPagination(raw),
+      paginationDefaults
+    );
+
+    return { tags, pagination };
+  }
+
+  async listCategories(ro?: RequestOptions): Promise<MarbleCategoryList> {
+    const raw = await this.getUnknown(`/categories`, ro);
+    const rawCategories = pickArray<unknown>(raw, ["categories", "data"]);
+    const categories = rawCategories.map((c) => fromRawCategory(c));
+
+    const paginationDefaults: Pagination = {
+      limit: categories.length,
+      currentPage: 1,
+      nextPage: null,
+      previousPage: null,
+      totalItems: categories.length,
+      totalPages: 1,
+    };
+    const pagination = fromRawPagination(
+      pickPagination(raw),
+      paginationDefaults
+    );
+
+    return { categories, pagination };
+  }
+
+  async listAuthors(ro?: RequestOptions): Promise<MarbleAuthorList> {
+    const raw = await this.getUnknown(`/authors`, ro);
+    const rawAuthors = pickArray<unknown>(raw, ["authors", "data"]);
+    const authors = rawAuthors.map((a) => fromRawAuthor(a));
+
+    const paginationDefaults: Pagination = {
+      limit: authors.length,
+      currentPage: 1,
+      nextPage: null,
+      previousPage: null,
+      totalItems: authors.length,
+      totalPages: 1,
+    };
+    const pagination = fromRawPagination(
+      pickPagination(raw),
+      paginationDefaults
+    );
+
+    return { authors, pagination };
+  }
 }
