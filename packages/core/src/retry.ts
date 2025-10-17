@@ -29,7 +29,7 @@ function parseRetryAfter(h: string): number | null {
 export function computeJitteredBackoff(
   attempt: number,
   baseDelayMs: number,
-  maxDelayMs: number
+  maxDelayMs: number,
 ): number {
   const exp = baseDelayMs * Math.pow(2, Math.max(0, attempt - 1));
   const capped = clamp(exp, baseDelayMs, maxDelayMs);
@@ -88,7 +88,7 @@ export const defaultRetryPolicy: Required<RetryPolicy> = {
  */
 export async function sleep(
   ms: number,
-  signal: AbortSignal | null | undefined
+  signal: AbortSignal | null | undefined,
 ): Promise<void> {
   if (ms <= 0) return;
   if (signal?.aborted) throw new Error("Aborted");

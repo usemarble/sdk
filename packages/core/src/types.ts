@@ -68,8 +68,8 @@ export type Tag = {
   slug: string;
   description: string | null;
   count: {
-    posts: number
-  }
+    posts: number;
+  };
 };
 
 /** Single tag envelope. */
@@ -88,8 +88,8 @@ export type Category = {
   slug: string;
   description: string | null;
   count: {
-    posts: number
-  }
+    posts: number;
+  };
 };
 
 /** Single category envelope. */
@@ -116,10 +116,21 @@ export type Author = {
 export type Social = {
   url: string;
   platform: SocialPlatform;
-}
+};
 
 /** All available social platforms. */
-export type SocialPlatform = "website" | "x" 
+export type SocialPlatform =
+  | "x"
+  | "github"
+  | "facebook"
+  | "instagram"
+  | "youtube"
+  | "tiktok"
+  | "linkedin"
+  | "website"
+  | "onlyfans"
+  | "discord"
+  | "bluesky";
 
 /** Single author envelope. */
 export type MarbleAuthor = { author: Author };

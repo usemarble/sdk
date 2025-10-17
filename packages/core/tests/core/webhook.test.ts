@@ -30,14 +30,14 @@ describe("webhooks", () => {
       "x-marble-timestamp": ts,
     };
     expect(() => verifyMarbleSignature(body, headers, secret)).toThrowError(
-      /Invalid webhook signature/
+      /Invalid webhook signature/,
     );
   });
 
   it("parseWebhookEvent maps correctly", () => {
     const evt = parseWebhookEvent<{ x: number }>(
       body,
-      (d) => d as { x: number }
+      (d) => d as { x: number },
     );
     expect(evt.type).toBe("post.published");
     expect(evt.data.x).toBe(1);

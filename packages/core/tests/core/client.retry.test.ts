@@ -34,7 +34,7 @@ describe("MarbleClient retry logic", () => {
                 totalPages: 1,
               },
             }),
-          }) as any
+          }) as any,
       );
 
     const retryPolicy: RetryPolicy = {
@@ -72,7 +72,7 @@ describe("MarbleClient retry logic", () => {
             },
             json: async () => ({ error: "rate" }),
             text: async () => "rate",
-          }) as any
+          }) as any,
       )
       .mockImplementationOnce(
         async () =>
@@ -89,7 +89,7 @@ describe("MarbleClient retry logic", () => {
                 totalPages: 1,
               },
             }),
-          }) as any
+          }) as any,
       );
 
     const retryPolicy: RetryPolicy = {

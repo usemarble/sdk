@@ -58,7 +58,7 @@ describe("pagination helpers", () => {
     const pages: number[] = [];
     for await (const page of client.iteratePostPages(
       {},
-      { pageSize: 1, startPage: 1 }
+      { pageSize: 1, startPage: 1 },
     )) {
       pages.push(page.pagination.currentPage);
     }
@@ -70,7 +70,7 @@ describe("pagination helpers", () => {
     const slugs: string[] = [];
     for await (const post of client.paginatePosts(
       {},
-      { pageSize: 1, startPage: 1 }
+      { pageSize: 1, startPage: 1 },
     )) {
       slugs.push(post.slug);
     }

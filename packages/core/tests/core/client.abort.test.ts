@@ -49,7 +49,7 @@ describe("MarbleClient aborts", () => {
                 totalPages: 1,
               },
             }),
-          }) as any
+          }) as any,
       );
 
     const retryPolicy: RetryPolicy = {

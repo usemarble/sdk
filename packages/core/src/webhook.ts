@@ -95,7 +95,7 @@ export function verifyMarbleSignature(
   rawBody: string,
   headers: WebhookHeaders,
   secret: string,
-  opts: VerifyOptions = {}
+  opts: VerifyOptions = {},
 ): true {
   const sigHeader = headers["x-marble-signature"];
   if (!sigHeader) throw new Error("Missing x-marble-signature header");
@@ -158,7 +158,7 @@ export function verifyMarbleSignature(
  */
 export function parseWebhookEvent<T>(
   jsonBody: string,
-  mapData: (u: unknown) => T
+  mapData: (u: unknown) => T,
 ): WebhookEvent<T> {
   const parsed = JSON.parse(jsonBody) as unknown;
   if (!isRecord(parsed)) throw new Error("Invalid webhook envelope");

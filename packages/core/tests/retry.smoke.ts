@@ -1,7 +1,7 @@
 import { MarbleClient } from "../src";
 
 function fakeFetchSequence(
-  responses: Array<{ ok: boolean; status: number; body?: unknown }>
+  responses: Array<{ ok: boolean; status: number; body?: unknown }>,
 ): typeof fetch {
   let i = 0;
   return (async () => {

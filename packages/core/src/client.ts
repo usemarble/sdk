@@ -67,12 +67,12 @@ export class MarbleClient {
    */
   async listPosts(
     params: PostsListParams = {},
-    ro?: RequestOptions
+    ro?: RequestOptions,
   ): Promise<MarblePostList> {
     const raw = await this.getJson(
       `/posts${q(params)}`,
       ApiListPostsResponse,
-      ro
+      ro,
     );
     const rawPosts = raw.posts ?? raw.data ?? [];
 
@@ -144,7 +144,7 @@ export class MarbleClient {
     const raw = await this.getJson(
       `/posts/${encodeURIComponent(slugOrId)}`,
       ApiPost,
-      ro
+      ro,
     );
     const post: Post = {
       id: raw.id,
@@ -195,12 +195,12 @@ export class MarbleClient {
    */
   async listTags(
     params: { page?: number; limit?: number } = {},
-    ro?: RequestOptions
+    ro?: RequestOptions,
   ): Promise<MarbleTagList> {
     const raw = await this.getJson(
       `/tags${q(params)}`,
       ApiListTagsResponse,
-      ro
+      ro,
     );
     const tags = (raw.tags ?? raw.data ?? []).map((t) => ({
       id: t.id,
@@ -239,12 +239,12 @@ export class MarbleClient {
    */
   async listCategories(
     params: { page?: number; limit?: number } = {},
-    ro?: RequestOptions
+    ro?: RequestOptions,
   ): Promise<MarbleCategoryList> {
     const raw = await this.getJson(
       `/categories${q(params)}`,
       ApiListCategoriesResponse,
-      ro
+      ro,
     );
     const categories = (raw.categories ?? raw.data ?? []).map((c) => ({
       id: c.id,
@@ -283,12 +283,12 @@ export class MarbleClient {
    */
   async listAuthors(
     params: { page?: number; limit?: number } = {},
-    ro?: RequestOptions
+    ro?: RequestOptions,
   ): Promise<MarbleAuthorList> {
     const raw = await this.getJson(
       `/authors${q(params)}`,
       ApiListAuthorsResponse,
-      ro
+      ro,
     );
     const authors = (raw.authors ?? raw.data ?? []).map((a) => ({
       id: a.id,
@@ -327,7 +327,7 @@ export class MarbleClient {
    */
   async *iteratePostPages(
     params: PostsScanParams = {},
-    opts: PaginateOptions = {}
+    opts: PaginateOptions = {},
   ): AsyncGenerator<MarblePostList, void, unknown> {
     const pageSize = opts.pageSize ?? 20;
     let page = opts.startPage ?? 1;
@@ -340,7 +340,7 @@ export class MarbleClient {
 
       const pageData = await this.listPosts(
         { ...params, page, limit: pageSize },
-        ro
+        ro,
       );
 
       yield pageData;
@@ -361,7 +361,7 @@ export class MarbleClient {
    */
   async *paginatePosts(
     params: PostsScanParams = {},
-    opts: PaginateOptions = {}
+    opts: PaginateOptions = {},
   ): AsyncGenerator<Post, void, unknown> {
     for await (const page of this.iteratePostPages(params, opts)) {
       for (const post of page.posts) {
@@ -375,7 +375,7 @@ export class MarbleClient {
    * Iterate through tag pages.
    */
   async *iterateTagPages(
-    opts: PaginateOptions = {}
+    opts: PaginateOptions = {},
   ): AsyncGenerator<MarbleTagList, void, unknown> {
     const pageSize = opts.pageSize ?? 50;
     let page = opts.startPage ?? 1;
@@ -400,7 +400,7 @@ export class MarbleClient {
    * Iterate through category pages.
    */
   async *iterateCategoryPages(
-    opts: PaginateOptions = {}
+    opts: PaginateOptions = {},
   ): AsyncGenerator<MarbleCategoryList, void, unknown> {
     const pageSize = opts.pageSize ?? 50;
     let page = opts.startPage ?? 1;
@@ -425,7 +425,7 @@ export class MarbleClient {
    * Iterate through author pages.
    */
   async *iterateAuthorPages(
-    opts: PaginateOptions = {}
+    opts: PaginateOptions = {},
   ): AsyncGenerator<MarbleAuthorList, void, unknown> {
     const pageSize = opts.pageSize ?? 50;
     let page = opts.startPage ?? 1;
@@ -455,7 +455,7 @@ export class MarbleClient {
   private async getJson<T extends z.ZodTypeAny>(
     path: string,
     schema: T,
-    ro?: RequestOptions
+    ro?: RequestOptions,
   ): Promise<z.infer<T>> {
     const policy = this.retryPolicy;
     const maxRetries = policy
@@ -495,7 +495,7 @@ export class MarbleClient {
               status: res.status,
               statusText: res.statusText,
               body,
-            }
+            },
           );
         }
         const data = await res.json();
@@ -519,7 +519,7 @@ export class MarbleClient {
   private headers(): Record<string, string> {
     const h = mergeHeaders(
       { "Content-Type": "application/json" },
-      this.extraHeaders
+      this.extraHeaders,
     );
     if (this.apiKey !== undefined) h.Authorization = `Bearer ${this.apiKey}`;
     return h;

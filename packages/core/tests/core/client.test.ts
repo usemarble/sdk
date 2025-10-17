@@ -51,7 +51,7 @@ describe("MarbleClient", () => {
               totalPages: 1,
             },
           }),
-        }) as any
+        }) as any,
     );
 
     const { posts, pagination } = await client.listPosts();
@@ -71,7 +71,7 @@ describe("MarbleClient", () => {
           json: async () => ({ error: "not found" }),
           text: async () => "not found",
           headers: { get: () => null },
-        }) as any
+        }) as any,
     );
 
     try {

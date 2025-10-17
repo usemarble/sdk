@@ -56,7 +56,7 @@ export function normalizeBaseUrl(url: string): string {
  */
 export function mergeHeaders(
   a: Record<string, string>,
-  b?: Record<string, string>
+  b?: Record<string, string>,
 ): Record<string, string> {
   return { ...a, ...(b ?? {}) };
 }

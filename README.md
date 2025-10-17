@@ -19,6 +19,7 @@ Provides a strongly typed client, pagination helpers, retry/backoff, and webhook
 ---
 
 ## 📂 Project Structure
+
 ```
 sdk/
 ├─ packages/

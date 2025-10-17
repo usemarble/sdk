@@ -30,7 +30,7 @@ export class MarbleHttpError extends Error {
    */
   constructor(
     message: string,
-    init: { status: number; statusText: string; body?: unknown }
+    init: { status: number; statusText: string; body?: unknown },
   ) {
     super(message);
     this.name = "MarbleHttpError";
