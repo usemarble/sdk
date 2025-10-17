@@ -88,24 +88,47 @@ export class MarbleClient {
       authors: (p.authors ?? []).map((a) => ({
         id: a.id,
         name: a.name,
-        image: a.image ?? "",
+        slug: "",
+        image: a.image ?? null,
+        bio: null,
+        role: null,
+        socials: [],
       })),
-      category: p.category,
-      tags: p.tags ?? [],
+      category: {
+        id: p.category.id,
+        name: p.category.name,
+        slug: p.category.slug,
+        description: null,
+      },
+      tags: (p.tags ?? []).map((t) => ({
+        id: t.id,
+        name: t.name,
+        slug: t.slug,
+        description: null,
+      })),
       attribution: p.attribution
         ? { author: p.attribution.author ?? "", url: p.attribution.url ?? "" }
         : null,
     }));
 
-    const pagination: Pagination = raw.pagination ??
-      raw.meta?.pagination ?? {
-        limit: posts.length,
-        currentPage: params.page ?? 1,
-        nextPage: null,
-        previousPage: null,
-        totalItems: posts.length,
-        totalPages: 1,
-      };
+    const p1 = raw.pagination ?? raw.meta?.pagination;
+    const pagination: Pagination = p1
+      ? {
+          limit: p1.limit,
+          currentPage: p1.currentPage,
+          nextPage: p1.nextPage,
+          previousPage: p1.previousPage,
+          totalItems: p1.totalItems,
+          totalPages: p1.totalPages,
+        }
+      : {
+          limit: posts.length,
+          currentPage: params.page ?? 1,
+          nextPage: null,
+          previousPage: null,
+          totalItems: posts.length,
+          totalPages: 1,
+        };
 
     return { posts, pagination };
   }
@@ -135,10 +158,24 @@ export class MarbleClient {
       authors: (raw.authors ?? []).map((a) => ({
         id: a.id,
         name: a.name,
-        image: a.image ?? "",
+        slug: "",
+        image: a.image ?? null,
+        bio: null,
+        role: null,
+        socials: [],
       })),
-      category: raw.category,
-      tags: raw.tags ?? [],
+      category: {
+        id: raw.category.id,
+        name: raw.category.name,
+        slug: raw.category.slug,
+        description: null,
+      },
+      tags: (raw.tags ?? []).map((t) => ({
+        id: t.id,
+        name: t.name,
+        slug: t.slug,
+        description: null,
+      })),
       attribution: raw.attribution
         ? {
             author: raw.attribution.author ?? "",
@@ -169,16 +206,27 @@ export class MarbleClient {
       id: t.id,
       name: t.name,
       slug: t.slug,
+      description: null,
+      count: { posts: 0 },
     }));
-    const pagination: Pagination = raw.pagination ??
-      raw.meta?.pagination ?? {
-        limit: tags.length,
-        currentPage: params.page ?? 1,
-        nextPage: null,
-        previousPage: null,
-        totalItems: tags.length,
-        totalPages: 1,
-      };
+    const p2 = raw.pagination ?? raw.meta?.pagination;
+    const pagination: Pagination = p2
+      ? {
+          limit: p2.limit,
+          currentPage: p2.currentPage,
+          nextPage: p2.nextPage,
+          previousPage: p2.previousPage,
+          totalItems: p2.totalItems,
+          totalPages: p2.totalPages,
+        }
+      : {
+          limit: tags.length,
+          currentPage: params.page ?? 1,
+          nextPage: null,
+          previousPage: null,
+          totalItems: tags.length,
+          totalPages: 1,
+        };
     return { tags, pagination };
   }
 
@@ -202,16 +250,27 @@ export class MarbleClient {
       id: c.id,
       name: c.name,
       slug: c.slug,
+      description: null,
+      count: { posts: 0 },
     }));
-    const pagination: Pagination = raw.pagination ??
-      raw.meta?.pagination ?? {
-        limit: categories.length,
-        currentPage: params.page ?? 1,
-        nextPage: null,
-        previousPage: null,
-        totalItems: categories.length,
-        totalPages: 1,
-      };
+    const p3 = raw.pagination ?? raw.meta?.pagination;
+    const pagination: Pagination = p3
+      ? {
+          limit: p3.limit,
+          currentPage: p3.currentPage,
+          nextPage: p3.nextPage,
+          previousPage: p3.previousPage,
+          totalItems: p3.totalItems,
+          totalPages: p3.totalPages,
+        }
+      : {
+          limit: categories.length,
+          currentPage: params.page ?? 1,
+          nextPage: null,
+          previousPage: null,
+          totalItems: categories.length,
+          totalPages: 1,
+        };
     return { categories, pagination };
   }
 
@@ -234,17 +293,30 @@ export class MarbleClient {
     const authors = (raw.authors ?? raw.data ?? []).map((a) => ({
       id: a.id,
       name: a.name,
-      image: a.image ?? "",
+      slug: "",
+      image: a.image ?? null,
+      bio: null,
+      role: null,
+      socials: [],
     }));
-    const pagination: Pagination = raw.pagination ??
-      raw.meta?.pagination ?? {
-        limit: authors.length,
-        currentPage: params.page ?? 1,
-        nextPage: null,
-        previousPage: null,
-        totalItems: authors.length,
-        totalPages: 1,
-      };
+    const p4 = raw.pagination ?? raw.meta?.pagination;
+    const pagination: Pagination = p4
+      ? {
+          limit: p4.limit,
+          currentPage: p4.currentPage,
+          nextPage: p4.nextPage,
+          previousPage: p4.previousPage,
+          totalItems: p4.totalItems,
+          totalPages: p4.totalPages,
+        }
+      : {
+          limit: authors.length,
+          currentPage: params.page ?? 1,
+          nextPage: null,
+          previousPage: null,
+          totalItems: authors.length,
+          totalPages: 1,
+        };
     return { authors, pagination };
   }
 

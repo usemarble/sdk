@@ -33,5 +33,20 @@
   },
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "homepage": "https://marblecms.com/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/usemarble/sdk.git"
+  },
+  "bugs": {
+    "url": "https://github.com/usemarble/sdk/issues"
+  },
+  "keywords": [
+    "marble",
+    "cms",
+    "api",
+    "sdk",
+    "typescript"
+  ]
 }

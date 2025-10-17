@@ -3,7 +3,7 @@
  * Dates are materialized as JS `Date` objects by the client.
  */
 export type Post = {
-  /** Stable identifier (string or UUID). */
+  /** Stable identifier (string). */
   id: string;
   /** URL-friendly slug. */
   slug: string;
@@ -21,25 +21,13 @@ export type Post = {
   updatedAt: Date;
 
   /** Authors credited on the post. */
-  authors: {
-    id: string;
-    name: string;
-    image: string;
-  }[];
+  authors: Author[];
 
   /** Primary category for the post. */
-  category: {
-    id: string;
-    slug: string;
-    name: string;
-  };
+  category: Omit<Category, "count">;
 
   /** Tags attached to the post. */
-  tags: {
-    id: string;
-    slug: string;
-    name: string;
-  }[];
+  tags: Omit<Tag, "count">[];
 
   /** Optional attribution (e.g., image credit). */
   attribution: {
@@ -78,6 +66,10 @@ export type Tag = {
   id: string;
   name: string;
   slug: string;
+  description: string | null;
+  count: {
+    posts: number
+  }
 };
 
 /** Single tag envelope. */
@@ -94,6 +86,10 @@ export type Category = {
   id: string;
   name: string;
   slug: string;
+  description: string | null;
+  count: {
+    posts: number
+  }
 };
 
 /** Single category envelope. */
@@ -109,8 +105,21 @@ export type MarbleCategoryList = {
 export type Author = {
   id: string;
   name: string;
-  image: string;
+  slug: string;
+  image: string | null;
+  bio: string | null;
+  role: string | null;
+  socials: Social[];
 };
+
+/** An authors social entity. */
+export type Social = {
+  url: string;
+  platform: SocialPlatform;
+}
+
+/** All available social platforms. */
+export type SocialPlatform = "website" | "x" 
 
 /** Single author envelope. */
 export type MarbleAuthor = { author: Author };
