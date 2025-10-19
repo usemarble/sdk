@@ -16,12 +16,44 @@ export type ApiPagination = z.infer<typeof ApiPagination>;
 
 /**
  * @internal
+ * Social platform enum for author socials.
+ */
+export const SocialPlatformSchema = z.enum([
+  "x",
+  "github",
+  "facebook",
+  "instagram",
+  "youtube",
+  "tiktok",
+  "linkedin",
+  "website",
+  "onlyfans",
+  "discord",
+  "bluesky"
+]);
+
+/**
+ * @internal
+ * Social link in author profiles.
+ */
+export const ApiSocial = z.object({
+  url: z.string(),
+  platform: SocialPlatformSchema,
+});
+export type ApiSocial = z.infer<typeof ApiSocial>;
+
+/**
+ * @internal
  * Author shape in API responses.
  */
 export const ApiAuthor = z.object({
   id: z.string(),
   name: z.string(),
-  image: z.string().optional().nullable(),
+  slug: z.string(),
+  image: z.string().nullable(),
+  bio: z.string().nullable(),
+  role: z.string().nullable(),
+  socials: z.array(ApiSocial),
 });
 export type ApiAuthor = z.infer<typeof ApiAuthor>;
 
@@ -33,6 +65,10 @@ export const ApiTag = z.object({
   id: z.string(),
   name: z.string(),
   slug: z.string(),
+  description: z.string().nullable(),
+  count: z.object({
+    posts: z.number(),
+  }),
 });
 export type ApiTag = z.infer<typeof ApiTag>;
 
@@ -44,6 +80,10 @@ export const ApiCategory = z.object({
   id: z.string(),
   name: z.string(),
   slug: z.string(),
+  description: z.string().nullable(),
+  count: z.object({
+    posts: z.number(),
+  }),
 });
 export type ApiCategory = z.infer<typeof ApiCategory>;
 
@@ -56,22 +96,21 @@ export const ApiPost = z.object({
   id: z.string(),
   slug: z.string(),
   title: z.string(),
-  content: z.string().optional(),
-  description: z.string().optional(),
-  coverImage: z.string().optional(),
-  // validate as ISO datetime strings with timezone/offset
-  publishedAt: z.string().datetime({ offset: true }),
-  updatedAt: z.string().datetime({ offset: true }).optional(),
-  authors: z.array(ApiAuthor).optional(),
+  content: z.string(),
+  featured: z.boolean(),
+  description: z.string(),
+  coverImage: z.url(),
+  publishedAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+  authors: z.array(ApiAuthor),
   category: ApiCategory,
-  tags: z.array(ApiTag).optional(),
+  tags: z.array(ApiTag),
   attribution: z
     .object({
-      author: z.string().optional(),
-      url: z.string().optional(),
+      author: z.string(),
+      url: z.url(),
     })
-    .nullable()
-    .optional(),
+    .nullable(),
 });
 export type ApiPost = z.infer<typeof ApiPost>;
 

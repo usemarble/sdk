@@ -11,6 +11,8 @@ export type Post = {
   title: string;
   /** Full body content (HTML/MD/plaintext depending on your backend). */
   content: string;
+  /** Whether the post is featured. */
+  featured: boolean;
   /** Short summary/SEO description. */
   description: string;
   /** Absolute or relative URL to a cover image. */

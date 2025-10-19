@@ -1,6 +1,6 @@
 {
   "name": "@usemarble/core",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "license": "MIT",
   "description": "The official TypeScript Core SDK for Marble",
   "author": "Marble",
@@ -8,11 +8,17 @@
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "files": ["dist"],
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
     },
     "./package.json": "./package.json"
   },
@@ -40,7 +46,7 @@
   "homepage": "https://marblecms.com/",
   "repository": {
     "type": "git",
-    "url": "https://github.com/usemarble/sdk.git"
+    "url": "git+https://github.com/usemarble/sdk.git"
   },
   "bugs": {
     "url": "https://github.com/usemarble/sdk/issues"
