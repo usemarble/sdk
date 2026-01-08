@@ -13,27 +13,25 @@
  */
 
 /**
- * Public type definitions used across the Marble SDK.
- *
- * Includes core models like {@link Post}, {@link Author}, and {@link Pagination},
- * as well as configuration types like {@link MarbleOptions}.
- */
-export * from "./types";
-
-/**
  * Main API client for interacting with Marble.
  *
  * Provides typed methods to fetch posts, tags, categories, authors, and more.
  * See {@link MarbleClient}.
  */
 export { MarbleClient } from "./client";
-
 /**
  * Error type thrown when HTTP requests fail.
  *
  * Wraps status, statusText, and (optionally) the response body.
  */
 export { MarbleHttpError } from "./errors";
+/**
+ * Public type definitions used across the Marble SDK.
+ *
+ * Includes core models like {@link Post}, {@link Author}, and {@link Pagination},
+ * as well as configuration types like {@link MarbleOptions}.
+ */
+export * from "./types";
 
 /**
  * Webhook utilities:
@@ -48,9 +46,9 @@ export { MarbleHttpError } from "./errors";
  * ```
  */
 export {
-  verifyMarbleSignature,
-  parseWebhookEvent,
-  type WebhookEvent,
-  type WebhookHeaders,
-  type VerifyOptions,
+	parseWebhookEvent,
+	type VerifyOptions,
+	verifyMarbleSignature,
+	type WebhookEvent,
+	type WebhookHeaders,
 } from "./webhook";

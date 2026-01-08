@@ -1,19 +1,19 @@
 {
-  "$schema": "https://typedoc.org/schema.json",
-  "entryPoints": ["src/index.ts"],
-  "out": "docs",
+	"$schema": "https://typedoc.org/schema.json",
+	"entryPoints": ["src/index.ts"],
+	"out": "docs",
 
-  "tsconfig": "tsconfig.json",
+	"tsconfig": "tsconfig.json",
 
-  "name": "@usemarble/core",
-  "includeVersion": true,
-  "hideGenerator": true,
+	"name": "@usemarble/core",
+	"includeVersion": true,
+	"hideGenerator": true,
 
-  "excludePrivate": true,
-  "excludeInternal": true,
-  "excludeExternals": false,
+	"excludePrivate": true,
+	"excludeInternal": true,
+	"excludeExternals": false,
 
-  "categorizeByGroup": true,
-  "readme": "none",
-  "githubPages": false
+	"categorizeByGroup": true,
+	"readme": "none",
+	"githubPages": false
 }

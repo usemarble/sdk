@@ -15,27 +15,27 @@
  * ```
  */
 export class MarbleHttpError extends Error {
-  /** HTTP status code (e.g. `404`, `500`) */
-  readonly status: number;
+	/** HTTP status code (e.g. `404`, `500`) */
+	readonly status: number;
 
-  /** HTTP status text (e.g. `"Not Found"`, `"Internal Server Error"`) */
-  readonly statusText: string;
+	/** HTTP status text (e.g. `"Not Found"`, `"Internal Server Error"`) */
+	readonly statusText: string;
 
-  /** Parsed response body (if available), can be JSON or string */
-  readonly body?: unknown;
+	/** Parsed response body (if available), can be JSON or string */
+	readonly body?: unknown;
 
-  /**
-   * @param message Error message
-   * @param init HTTP error details from the failed response
-   */
-  constructor(
-    message: string,
-    init: { status: number; statusText: string; body?: unknown },
-  ) {
-    super(message);
-    this.name = "MarbleHttpError";
-    this.status = init.status;
-    this.statusText = init.statusText;
-    this.body = init.body;
-  }
+	/**
+	 * @param message Error message
+	 * @param init HTTP error details from the failed response
+	 */
+	constructor(
+		message: string,
+		init: { status: number; statusText: string; body?: unknown },
+	) {
+		super(message);
+		this.name = "MarbleHttpError";
+		this.status = init.status;
+		this.statusText = init.statusText;
+		this.body = init.body;
+	}
 }

@@ -15,7 +15,11 @@ export function q(params: Record<string, unknown>): string {
     if (Array.isArray(v)) {
       if (v.length === 0) continue;
       if (k === "tags") usp.set(k, v.join(","));
-      else v.forEach((val) => usp.append(k, String(val)));
+      else {
+        for (const val of v) {
+          usp.append(k, String(val));
+        }
+      }
     } else {
       usp.set(k, String(v));
     }
@@ -56,7 +60,7 @@ export function normalizeBaseUrl(url: string): string {
  */
 export function mergeHeaders(
   a: Record<string, string>,
-  b?: Record<string, string>,
+  b?: Record<string, string>
 ): Record<string, string> {
   return { ...a, ...(b ?? {}) };
 }

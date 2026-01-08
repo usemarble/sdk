@@ -1,61 +1,63 @@
 {
-  "name": "@usemarble/core",
-  "version": "0.1.3",
-  "license": "MIT",
-  "description": "The official TypeScript Core SDK for Marble",
-  "author": "Marble",
-  "type": "module",
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "files": ["dist"],
-  "exports": {
-    ".": {
-      "import": {
-        "types": "./dist/index.d.ts",
-        "default": "./dist/index.js"
-      },
-      "require": {
-        "types": "./dist/index.d.cts",
-        "default": "./dist/index.cjs"
-      }
-    },
-    "./package.json": "./package.json"
-  },
-  "scripts": {
-    "build": "tsup --config ../../tsup.config.ts",
-    "check-types": "tsc -p tsconfig.json --noEmit",
-    "clean": "rimraf dist",
-    "test": "tsx tests/smoke.ts",
-    "retry-test": "tsx tests/retry.smoke.ts",
-    "docs": "typedoc --options typedoc.json",
-    "docs:clean": "rimraf docs"
-  },
-  "dependencies": {
-    "zod": "^4.1.11"
-  },
-  "devDependencies": {
-    "@types/node": "^20.14.10",
-    "@usemarble/typescript-config": "workspace:*",
-    "tsx": "^4.20.5",
-    "typedoc": "^0.28.13"
-  },
-  "publishConfig": {
-    "access": "public"
-  },
-  "homepage": "https://marblecms.com/",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/usemarble/sdk.git"
-  },
-  "bugs": {
-    "url": "https://github.com/usemarble/sdk/issues"
-  },
-  "keywords": [
-    "marble",
-    "cms",
-    "api",
-    "sdk",
-    "typescript"
-  ]
+	"name": "@usemarble/core",
+	"version": "0.1.3",
+	"license": "MIT",
+	"description": "The official TypeScript Core SDK for Marble",
+	"author": "Marble",
+	"type": "module",
+	"main": "./dist/index.cjs",
+	"module": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"files": [
+		"dist"
+	],
+	"exports": {
+		".": {
+			"import": {
+				"types": "./dist/index.d.ts",
+				"default": "./dist/index.js"
+			},
+			"require": {
+				"types": "./dist/index.d.cts",
+				"default": "./dist/index.cjs"
+			}
+		},
+		"./package.json": "./package.json"
+	},
+	"scripts": {
+		"build": "tsup --config ../../tsup.config.ts",
+		"check-types": "tsc -p tsconfig.json --noEmit",
+		"clean": "rimraf dist",
+		"test": "tsx tests/smoke.ts",
+		"retry-test": "tsx tests/retry.smoke.ts",
+		"docs": "typedoc --options typedoc.json",
+		"docs:clean": "rimraf docs"
+	},
+	"dependencies": {
+		"zod": "^4.1.11"
+	},
+	"devDependencies": {
+		"@types/node": "^20.14.10",
+		"@usemarble/tsconfig": "workspace:*",
+		"tsx": "^4.20.5",
+		"typedoc": "^0.28.13"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"homepage": "https://marblecms.com/",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/usemarble/sdk.git"
+	},
+	"bugs": {
+		"url": "https://github.com/usemarble/sdk/issues"
+	},
+	"keywords": [
+		"marble",
+		"cms",
+		"api",
+		"sdk",
+		"typescript"
+	]
 }

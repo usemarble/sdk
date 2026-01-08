@@ -1,15 +1,15 @@
 {
-  "extends": "@usemarble/typescript-config/base.json",
-  "compilerOptions": {
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
-    "moduleDetection": "force",
+	"extends": "@usemarble/tsconfig/base.json",
+	"compilerOptions": {
+		"module": "ESNext",
+		"moduleResolution": "Bundler",
+		"moduleDetection": "force",
 
-    "rootDir": ".",
-    "outDir": "dist",
-    "lib": ["ES2022"],
-    "types": ["node"]
-  },
-  "include": ["src", "tests"],
-  "exclude": ["dist", "node_modules"]
+		"rootDir": ".",
+		"outDir": "dist",
+		"lib": ["ES2022"],
+		"types": ["node"]
+	},
+	"include": ["src", "tests"],
+	"exclude": ["dist", "node_modules"]
 }
