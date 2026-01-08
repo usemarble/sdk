@@ -48,14 +48,6 @@ Run tests across all packages:
 pnpm test
 ```
 
-### Building Documentation
-
-Generate API reference for the entire monorepo:
-
-```bash
-pnpm typedoc
-```
-
 ---
 
 ## � License
